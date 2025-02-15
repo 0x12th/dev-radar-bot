@@ -1,0 +1,16 @@
+services:
+  bot_db: 
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dev_radar_bot
+      PGDATA: /var/lib/postgresql/data/
+    ports:
+      - "65432:5432"
+    volumes:
+      - bot_db_data:/var/lib/postgresql/data/
+
+volumes:
+  bot_db_data:
