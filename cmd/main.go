@@ -10,15 +10,19 @@ import (
 	"github.com/0x12th/dev-radar-bot/internal/config"
 )
 
-
 func main() {
-	_, err := bot.New(config.GetConfig().TgBotToken)
+	cfg, err := config.GetConfig()
+	if err != nil {
+		log.Fatalf("Config error: %v", err)
+	}
+
+	_, err = bot.New(cfg.TgBotToken)
 	if err != nil {
 		log.Printf("[ERROR] failed to create botAPI: %v", err)
 		return
 	}
 
-	db, err := sqlx.Connect("postgres", config.GetConfig().PgDSN)
+	db, err := sqlx.Connect("postgres", cfg.PgDSN)
 	if err != nil {
 		log.Printf("[ERROR] failed to connect to db: %v", err)
 		return

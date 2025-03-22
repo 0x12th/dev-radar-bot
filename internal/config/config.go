@@ -1,14 +1,13 @@
 package config
 
 import (
+	"fmt"
 	"log"
-	"os"
 	"sync"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
-// Config структура для конфигурации
 type Config struct {
 	PgDSN      string
 	TgBotToken string
@@ -16,25 +15,31 @@ type Config struct {
 }
 
 var (
-	cfg  Config
+	cfg  *Config
 	once sync.Once
 )
 
-func GetConfig() Config {
+func GetConfig() (*Config, error) {
 	once.Do(func() {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("Error loading .env file")
+		viper.SetConfigName(".env")
+		viper.SetConfigType("env")
+		viper.AddConfigPath(".")
+		viper.AutomaticEnv()
+
+		if err := viper.ReadInConfig(); err != nil {
+			log.Printf("Warning: unable to read config file: %v", err)
 		}
 
-		cfg.PgDSN = os.Getenv("PgDSN")
-		cfg.TgBotToken = os.Getenv("TgBotToken")
-		cfg.OpenAIKey = os.Getenv("OpenAIKey")
-
-		if cfg.PgDSN == "" || cfg.TgBotToken == "" || cfg.OpenAIKey == "" {
-			log.Fatal("[ERROR] missing required configuration fields")
+		cfg = &Config{
+			PgDSN:      viper.GetString("PgDSN"),
+			TgBotToken: viper.GetString("TgBotToken"),
+			OpenAIKey:  viper.GetString("OpenAIKey"),
 		}
-
 	})
-	return cfg
+
+	if cfg == nil {
+		return nil, fmt.Errorf("[ERROR] missing required configuration fields")
+	}
+
+	return cfg, nil
 }
